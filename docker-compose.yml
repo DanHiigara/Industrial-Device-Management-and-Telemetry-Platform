@@ -1,0 +1,120 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: platform
+      POSTGRES_PASSWORD: platform
+      POSTGRES_DB: platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  influxdb:
+    image: influxdb:2.7
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminadmin
+      DOCKER_INFLUXDB_INIT_ORG: platform
+      DOCKER_INFLUXDB_INIT_BUCKET: telemetry
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: supersecrettoken
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdata:/var/lib/influxdb2
+
+  redpanda:
+    image: redpandadata/redpanda:v24.2.4
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --reserve-memory
+      - "0M"
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:9092
+    ports:
+      - "9092:9092"
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      JWT_SECRET: "change-me-in-prod-please-change"
+      AUTH_SERVICE_URL: "http://auth-service:8081"
+      DEVICE_SERVICE_URL: "http://device-service:8082"
+      TELEMETRY_SERVICE_URL: "http://telemetry-service:8083"
+      ALERT_SERVICE_URL: "http://alert-service:8084"
+    depends_on:
+      - auth-service
+      - device-service
+      - telemetry-service
+      - alert-service
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/platform
+      SPRING_DATASOURCE_USERNAME: platform
+      SPRING_DATASOURCE_PASSWORD: platform
+      JWT_SECRET: "change-me-in-prod-please-change"
+    depends_on:
+      - postgres
+
+  device-service:
+    build: ./device-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/platform
+      SPRING_DATASOURCE_USERNAME: platform
+      SPRING_DATASOURCE_PASSWORD: platform
+      JWT_SECRET: "change-me-in-prod-please-change"
+    depends_on:
+      - postgres
+
+  telemetry-service:
+    build: ./telemetry-service
+    ports:
+      - "8083:8083"
+    environment:
+      DEVICE_SERVICE_URL: "http://device-service:8082"
+      INFLUX_URL: "http://influxdb:8086"
+      INFLUX_TOKEN: "supersecrettoken"
+      INFLUX_ORG: "platform"
+      INFLUX_BUCKET: "telemetry"
+      KAFKA_BOOTSTRAP: "redpanda:9092"
+    depends_on:
+      - influxdb
+      - redpanda
+      - device-service
+
+  alert-service:
+    build: ./alert-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/platform
+      SPRING_DATASOURCE_USERNAME: platform
+      SPRING_DATASOURCE_PASSWORD: platform
+      KAFKA_BOOTSTRAP: "redpanda:9092"
+    depends_on:
+      - postgres
+      - redpanda
+
+volumes:
+  pgdata:
+  influxdata:

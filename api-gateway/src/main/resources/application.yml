@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-me}
+
+services:
+  auth: ${AUTH_SERVICE_URL:http://localhost:8081}
+  device: ${DEVICE_SERVICE_URL:http://localhost:8082}
+  telemetry: ${TELEMETRY_SERVICE_URL:http://localhost:8083}
+  alert: ${ALERT_SERVICE_URL:http://localhost:8084}
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth
+          uri: ${services.auth}
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+
+        - id: device
+          uri: ${services.device}
+          predicates:
+            - Path=/api/devices/**
+          filters:
+            - StripPrefix=1
+
+        - id: telemetry
+          uri: ${services.telemetry}
+          predicates:
+            - Path=/api/telemetry/**
+          filters:
+            - StripPrefix=1
+
+        - id: alert
+          uri: ${services.alert}
+          predicates:
+            - Path=/api/alerts/**
+          filters:
+            - StripPrefix=1
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # symmetric HS256
+          jwk-set-uri: ""  # not used
+
