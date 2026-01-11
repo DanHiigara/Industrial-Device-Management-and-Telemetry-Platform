@@ -13,6 +13,7 @@
   <artifactId>common-lib</artifactId>
 
   <dependencies>
+<<<<<<< HEAD
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
@@ -47,4 +48,51 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+=======
+  <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-web</artifactId>
+  </dependency>
+
+  <!-- ADD: provides @RestControllerAdvice, validation exception types, etc. -->
+  <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+  </dependency>
+
+  <!-- ADD: provides org.springframework.validation.BindException -->
+  <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context</artifactId>
+  </dependency>
+
+  <!-- ADD: provides org.slf4j.MDC -->
+  <dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+  </dependency>
+
+  <!-- ADD: provides jakarta.servlet.http.HttpServletRequest -->
+  <dependency>
+    <groupId>jakarta.servlet</groupId>
+    <artifactId>jakarta.servlet-api</artifactId>
+    <scope>provided</scope>
+  </dependency>
+
+  <dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+  </dependency>
+
+  <dependency>
+    <groupId>jakarta.validation</groupId>
+    <artifactId>jakarta.validation-api</artifactId>
+  </dependency>
+
+  <dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-observation</artifactId>
+  </dependency>
+</dependencies>
+>>>>>>> 8b4613df3c69a3e1d10e84bb32ccecf8442776be
 </project>
