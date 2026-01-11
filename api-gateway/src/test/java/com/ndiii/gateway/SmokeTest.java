@@ -1,4 +1,4 @@
-package com.ndiii.alert;
+package com.ndiii.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
